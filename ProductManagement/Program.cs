@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using ProductManagement.Data;
+using ProductManagement.Middleware;
 using ProductManagement.Repositories;
+using ProductManagement.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,16 +15,25 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Repository
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
+// Services
+builder.Services.AddScoped<IProductService, ProductService>();
+
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/
-builder.Services.AddOpenApi();
+
+// Swagger/OpenAPI
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+// Add global exception handling middleware at beginning!
+app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
